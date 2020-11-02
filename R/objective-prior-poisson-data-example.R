@@ -1,7 +1,7 @@
 library(cmdstanr)
 library(loo)
-mod <- cmdstan_model('objective-prior-poisson-lik.stan')
-y <- readRDS('pois_draws_n_20_mean_1.35.RDS')
+mod <- cmdstan_model('stan/objective-prior-poisson-lik.stan')
+y <- readRDS('data/pois_draws_n_20_mean_1.35.RDS')
 dat <- list(c = 2, u_0 = 0.65)
 dat$y <- y
 dat$N <- length(y)
@@ -40,7 +40,7 @@ fit <- mod$sample(dat,
     )
 d_01 <- fit$draws()
 
-pdf('post-comparison.pdf',width = 4, height = 6)
+pdf('output/post-comparison.pdf',width = 4, height = 6)
 par(mfrow=c(2,1))
 hist(d_01[,,'theta'],freq = F,breaks=100, main = bquote('p('*theta*'|y), '*u(0)*'=0.10'),
      xlab = bquote(''*theta*''), xlim=range(c(d[,,'theta'],d_01[,,'theta'])))

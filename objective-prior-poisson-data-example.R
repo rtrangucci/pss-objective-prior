@@ -1,12 +1,10 @@
 library(cmdstanr)
 library(loo)
 mod <- cmdstan_model('objective-prior-poisson-lik.stan')
-set.seed(35)
-N <- 20
-y <- rpois(N,1)
+y <- readRDS('pois_draws_n_20_mean_1.35.RDS')
 dat <- list(c = 2, u_0 = 0.65)
 dat$y <- y
-dat$N <- N
+dat$N <- length(y)
 fit <- mod$sample(dat, 
                   iter_warmup =  2000,
                   iter_sampling =  10000,

@@ -1,6 +1,8 @@
 args <- commandArgs(trailingOnly = TRUE)
 n <- as.numeric(args[1])
 u_0 <- as.numeric(args[2])
+step_size <- ifelse(u_0 == 0.1, 0.2, 0.3)
+thin <- ifelse(u_0 == 0.1, 10, 40)
 options(warn=-1)
 library(loo)
 library(cmdstanr)
@@ -55,6 +57,7 @@ param_guess <- function(dat, p, mod, seed) {
   N <- length(dat)
   mu <- mean(dat)
   s_dat <- list(y = dat, N = N, c = p[1], u_0 = p[2])
+  s_dat$acc <- ifelse(u_0 == 0.1, 1e-8, 1e-11)
   fit <- mod$optimize(data = s_dat, init = init_fun, refresh = 0, algorithm = 'lbfgs', seed = seed)
   
   mu <- log(fit$mle())
@@ -98,21 +101,46 @@ refit_both_models_signed_bb <- function(y1ton,
   n <- length(y1ton)
   # Fit model that employs an informative prior
   stan_dat <- list(N = n, y = y1ton, c = c_prior, u_0 = u_0_prior)
+  stan_dat$acc <- ifelse(u_0 == 0.1, 1e-8, 1e-11)
   n_post_conj_fit <- mod$sample(data = stan_dat, 
                                 num_cores = 1, 
                                 num_chains = 4,
-                                num_samples = floor(n_draws / 4), 
-                                num_warmup = 500,
+                                num_samples = floor(n_draws / 4) * thin, 
+                                num_warmup = 8000,
                                 adapt_delta = 0.99,
                                 max_treedepth = 12,
                                 inv_metric = as.array(0.0407221),
-                                step_size = 0.01,
-                                adapt_engaged = F,
+                                step_size = step_size,
+                                adapt_engaged = T,
                                 init = init_fun,
+                                thin = thin,
                                 refresh=0,
                                 seed = seed
   )
-  draws <- n_post_conj_fit$draws()[,,'theta']
+  s_samps <- drop(n_post_conj_fit$draws(variables = 'theta', inc_warmup=F))
+  d_samps <- n_post_conj_fit$sampler_diagnostics()
+  n_chains <- dim(s_samps)[2] 
+  chains_needed <- ifelse(is.null(n_chains), 3, 4 - n_chains)
+  if (chains_needed > 0) {
+	  n_post_conj_fit <- mod$sample(data = stan_dat, 
+					num_cores = 1, 
+					num_chains = 4,
+					num_samples = floor(n_draws / 4) * thin, 
+					num_warmup = 8000,
+					adapt_delta = 0.99,
+					max_treedepth = 12,
+					inv_metric = as.array(0.0407221),
+					step_size = step_size,
+					adapt_engaged = T,
+					init = init_fun,
+					thin = thin,
+					refresh=0,
+					seed = seed + 1e4
+	  )
+	  new_samps <- drop(n_post_conj_fit$draws(variables = 'theta', inc_warmup=F))
+	  s_samps <- cbind(s_samps,new_samps[,1:chains_needed])
+  }
+  draws <- s_samps
   n_post_conj <- as.vector(draws)
   
   # Fit model with flat prior to 

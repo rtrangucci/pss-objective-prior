@@ -22,7 +22,7 @@ fit <- mod$sample(dat,
         )
 d <- fit$draws()
 
-dat <- list(c = 2, u_0 = 0.1, acc = 1e-9)
+dat <- list(c = 2, u_0 = 0.1, acc = 1e-8)
 dat$y <- y
 dat$N <- length(y) 
 fit <- mod$sample(dat, 

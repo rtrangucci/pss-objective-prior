@@ -1,4 +1,4 @@
-fls <- list.files('data/run_01/',full.names = T)
+fls <- list.files('data/run_01_final/',full.names = T)
 pss_01 <- rep(NA_real_, length(fls))
 min_ess_01 <- rep(NA_real_, length(fls))
 for (fl_i in seq_along(fls)) {
@@ -8,7 +8,7 @@ for (fl_i in seq_along(fls)) {
   min_ess_01[fl_i] <- min(1/pss_run$var_weights)
 }
 
-fls <- list.files('data/run_65/',full.names = T)
+fls <- list.files('data/run_65_final/',full.names = T)
 pss_65 <- rep(NA_real_, length(fls))
 min_ess_65 <- rep(NA_real_, length(fls))
 for (fl_i in seq_along(fls)) {

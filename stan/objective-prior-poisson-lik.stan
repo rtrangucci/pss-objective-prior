@@ -11,6 +11,7 @@ data {
   real u_0;
   int N;
   int y[N];
+  real<lower=0> acc;
 }
 transformed data{
   real x_r[1] = {c};
@@ -25,7 +26,7 @@ model {
    real z[1, 1]
     = integrate_ode_rk45(dz_dt, z_init, 0, ts, rep_array(0.0,0),
                          x_r, rep_array(0, 0),
-                         1e-9, 1e-9, 1e5);
+                         acc, acc, 1e5);
  target += log(z[1,1]);
  if (N > 0)
     y ~ poisson(theta);

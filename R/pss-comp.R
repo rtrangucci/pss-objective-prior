@@ -24,5 +24,5 @@ pdf('output/opess-comparions.pdf',width = 4, height = 6)
 hist(pss_01,breaks=20, main = bquote('OPESS '*u(0)*'=0.10'),
      xlab = 'PSS', xlim=xlims)
 hist(pss_65,breaks=50, main = bquote('OPESS '*u(0)*'=0.65'),
-     xlab = bquote(''*lambda*''), xlim=xlims)
+     xlab = bquote('PSS'), xlim=xlims)
 dev.off()
